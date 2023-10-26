@@ -1,4 +1,8 @@
-# Youtube: remove unpopular videos
+<p align="center">  
+  <img src="icon.png" width=150 height=150>
+</p>
+
+<h1 align="center">Youtube: Remove unpopular videos</h1>
 
 This Tampermonkey script is designed to declutter your YouTube recommendations by removing videos with fewer than a certain number of views. It operates by scanning the videos in your YouTube recommendations and removing any that fall below the specified view count threshold.
 

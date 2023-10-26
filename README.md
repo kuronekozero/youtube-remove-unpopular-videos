@@ -6,6 +6,9 @@ This Tampermonkey script is designed to declutter your YouTube recommendations b
 
 The script works by scanning the videos in your YouTube recommendations and removing any that have fewer than a specified number of views. The default threshold is set at 1000 views, but this can be easily adjusted to suit your preferences.
 
+<img src="Screenshot_1new.png" width=150 height=150>
+<img src="Screenshot_3new.png" width=150 height=150>
+
 ## Installation 
 
 1. Install tampermonkey extension:

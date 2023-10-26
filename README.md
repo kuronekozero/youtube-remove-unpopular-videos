@@ -12,6 +12,7 @@ Videos like this will be removed:
   <img src="Screenshot_1new.png" width=250 height=220>
   <img src="Screenshot_3new.png" width=250 height=220>
 </p>
+
 ## Installation 
 
 1. Install tampermonkey extension:

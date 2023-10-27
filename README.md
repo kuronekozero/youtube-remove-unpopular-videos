@@ -50,3 +50,7 @@ var minViews = 5000; // Minimum number of views
 ### Why the script doesn't work?
 If the default language of the YouTube page isn't English, the script won't work.
 In future versions of this script, I'll add more languages. For now it supports only english.
+
+## License
+
+This project is licensed under the MIT License.

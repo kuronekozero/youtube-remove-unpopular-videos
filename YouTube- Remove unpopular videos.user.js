@@ -3,51 +3,50 @@
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  Remove videos with less than a certain number of views
+// @icon         https://raw.githubusercontent.com/kuronekozero/youtube-remove-unpopular-videos/master/icon.png
 // @author       Timothy (kuronek0zero)
-// @namespace    https://github.com/zerodytrash/Simple-YouTube-Age-Restriction-Bypass/
+// @namespace    https://github.com/kuronekozero/youtube-remove-unpopular-videos/tree/master
 // @match        https://www.youtube.com/*
 // @grant        GM_addStyle
+// @license      MIT
+// @downloadURL https://update.greasyfork.org/scripts/478273/YouTube%3A%20Remove%20unpopular%20videos.user.js
+// @updateURL https://update.greasyfork.org/scripts/478273/YouTube%3A%20Remove%20unpopular%20videos.meta.js
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // If you think that 1000 views is too much or too little
-    // you can just change minViews on any other number you like
-
     var minViews = 1000; // Minimum number of views
 
     var getVideoRows = function() {
-        var contents = document.querySelector(
-            'div#contents[class="style-scope ytd-rich-grid-renderer"]'
-        );
-        return contents.childNodes;
-    }
+        return document.querySelectorAll('ytd-rich-item-renderer');
+    };
 
-    var processVideoRow = function(row) {
-        var videos = row.querySelectorAll('ytd-rich-item-renderer');
-        for (var i=0; i<videos.length; i++){
-            var video = videos[i];
-            var viewCountMatch = video.textContent.match(/(\d+(\.\d+)?(K|M)?) views/);
-            if (viewCountMatch) {
-                var viewCountText = viewCountMatch[1];
-                var viewCount = parseFloat(viewCountText.replace('K', 'e3').replace('M', 'e6'));
-                if (viewCount < minViews) {
-                    video.remove();
+    var processVideoRow = function(video) {
+        var viewCountElement = video.querySelector('span.inline-metadata-item');
+        if (viewCountElement) {
+            var viewCountText = viewCountElement.textContent.trim();
+            if (viewCountText === "No views") {
+                video.remove();
+            } else {
+                var viewCountMatch = viewCountText.match(/(\d+(\.\d+)?(K|M)?) views/);
+                if (viewCountMatch) {
+                    var viewCount = parseFloat(viewCountMatch[1].replace('K', 'e3').replace('M', 'e6'));
+                    if (viewCount < minViews) {
+                        video.remove();
+                    }
                 }
             }
         }
-    }
+    };
 
     var run = function() {
         var videoRows = getVideoRows();
-        for (var i=0; i<videoRows.length; i++){
-            processVideoRow(videoRows[i]);
-        }
-    }
+        videoRows.forEach(processVideoRow);
+    };
 
-    // without this line of code script may not work in firefox.
     setTimeout(run, 500);
-
     setInterval(run, 500);
 })();
+
+

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         YouTube: Remove unpopular videos
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.3
 // @description  Remove videos with less than a certain number of views
 // @icon         https://raw.githubusercontent.com/kuronekozero/youtube-remove-unpopular-videos/master/icon.png
 // @author       Timothy (kuronek0zero)
@@ -16,22 +16,34 @@
 (function() {
     'use strict';
 
-    var minViews = 1000; // Minimum number of views
+    const minViews = 500; // Minimum number of views
 
-    var getVideoRows = function() {
+    const getVideoRows = function() {
         return document.querySelectorAll('ytd-rich-item-renderer');
     };
 
-    var processVideoRow = function(video) {
-        var viewCountElement = video.querySelector('span.inline-metadata-item');
+    const processVideoRow = function(video) {
+        // Updated selector for view count element
+        const viewCountElement = video.querySelector('span.inline-metadata-item.style-scope.ytd-video-meta-block');
+
         if (viewCountElement) {
-            var viewCountText = viewCountElement.textContent.trim();
-            if (viewCountText === "No views") {
+            const viewCountText = viewCountElement.textContent.trim();
+
+            if (viewCountText.includes("No views")) {
                 video.remove();
             } else {
-                var viewCountMatch = viewCountText.match(/(\d+(\.\d+)?(K|M)?) views/);
+                // Updated regex to match the view count number, considering 'K', 'M', or no suffix
+                const viewCountMatch = viewCountText.match(/([\d,.]+)(K|M)? views/);
+
                 if (viewCountMatch) {
-                    var viewCount = parseFloat(viewCountMatch[1].replace('K', 'e3').replace('M', 'e6'));
+                    let viewCount = parseFloat(viewCountMatch[1].replace(/,/g, '')); // Remove commas
+
+                    if (viewCountMatch[2] === 'K') {
+                        viewCount *= 1000; // Convert 'K' to thousands
+                    } else if (viewCountMatch[2] === 'M') {
+                        viewCount *= 1000000; // Convert 'M' to millions
+                    }
+
                     if (viewCount < minViews) {
                         video.remove();
                     }
@@ -40,13 +52,11 @@
         }
     };
 
-    var run = function() {
-        var videoRows = getVideoRows();
+    const run = function() {
+        const videoRows = getVideoRows();
         videoRows.forEach(processVideoRow);
     };
 
     setTimeout(run, 500);
     setInterval(run, 500);
 })();
-
-

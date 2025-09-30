@@ -4,7 +4,8 @@
 
 <h1 align="center">Youtube: Remove unpopular videos</h1>
 
-[![Buy Me A Coffee](https://img.shields.io/badge/☕-Buy%20me%20a%20coffee-yellow?style=flat-square)](https://www.buymeacoffee.com/kur0)  
+[![Buy Me A Coffee](https://img.shields.io/badge/☕-Buy%20me%20a%20coffee-yellow?style=flat-square)](https://www.buymeacoffee.com/kur0)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20me-blue?style=flat-square&logo=ko-fi)](https://ko-fi.com/N4N41M2YUG)  
 
 This Tampermonkey script is designed to declutter your YouTube recommendations by removing videos with fewer than a certain number of views. It operates by scanning the videos in your YouTube recommendations and removing any that fall below the specified view count threshold.
 

@@ -1,62 +1,98 @@
 // ==UserScript==
-// @name         YouTube: Remove unpopular videos
+// @name         YouTube: Hide Unpopular Videos & Shorts
 // @namespace    http://tampermonkey.net/
-// @version      0.3
-// @description  Remove videos with less than a certain number of views
+// @version      0.4
+// @description  Hides videos and shorts with less than a certain number of views, works with in-app navigation.
 // @icon         https://raw.githubusercontent.com/kuronekozero/youtube-remove-unpopular-videos/master/icon.png
-// @author       Timothy (kuronek0zero)
-// @namespace    https://github.com/kuronekozero/youtube-remove-unpopular-videos/tree/master
+// @author       Timothy (kuronek0zero) - (Updated by Gemini)
 // @match        https://www.youtube.com/*
 // @grant        GM_addStyle
 // @license      MIT
-// @downloadURL https://update.greasyfork.org/scripts/478273/YouTube%3A%20Remove%20unpopular%20videos.user.js
-// @updateURL https://update.greasyfork.org/scripts/478273/YouTube%3A%20Remove%20unpopular%20videos.meta.js
+// @downloadURL  https://update.greasyfork.org/scripts/478273/YouTube%3A%20Hide%20Unpopular%20Videos%20%26%20Shorts.user.js
+// @updateURL    https://update.greasyfork.org/scripts/478273/YouTube%3A%20Hide%20Unpopular%20Videos%20%26%20Shorts.meta.js
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    const minViews = 500; // Minimum number of views
+    const minViews = 50000;
 
-    const getVideoRows = function() {
-        return document.querySelectorAll('ytd-rich-item-renderer');
-    };
+    GM_addStyle(`
+        .unpopular-video-hidden {
+            display: none !important;
+        }
+    `);
 
-    const processVideoRow = function(video) {
-        // Updated selector for view count element
-        const viewCountElement = video.querySelector('span.inline-metadata-item.style-scope.ytd-video-meta-block');
+    const processContent = function(item) {
+        const metadataSpans = item.querySelectorAll(
+            'span.yt-content-metadata-view-model__metadata-text, .shortsLockupViewModelHostOutsideMetadataSubhead span'
+        );
+
+        let viewCountElement = null;
+        for (const span of metadataSpans) {
+            if (span.textContent && span.textContent.includes('views')) {
+                viewCountElement = span;
+                break;
+            }
+        }
 
         if (viewCountElement) {
             const viewCountText = viewCountElement.textContent.trim();
-
-            if (viewCountText.includes("No views")) {
-                video.remove();
+            if (viewCountText.toLowerCase().includes("no views")) {
+                item.classList.add('unpopular-video-hidden');
             } else {
-                // Updated regex to match the view count number, considering 'K', 'M', or no suffix
-                const viewCountMatch = viewCountText.match(/([\d,.]+)(K|M)? views/);
-
+                const viewCountMatch = viewCountText.match(/([\d,.]+)\s*(K|M|B)?\s*views/i);
                 if (viewCountMatch) {
-                    let viewCount = parseFloat(viewCountMatch[1].replace(/,/g, '')); // Remove commas
+                    let viewCount = parseFloat(viewCountMatch[1].replace(/,/g, ''));
+                    const suffix = viewCountMatch[2] ? viewCountMatch[2].toUpperCase() : null;
 
-                    if (viewCountMatch[2] === 'K') {
-                        viewCount *= 1000; // Convert 'K' to thousands
-                    } else if (viewCountMatch[2] === 'M') {
-                        viewCount *= 1000000; // Convert 'M' to millions
-                    }
+                    if (suffix === 'K') viewCount *= 1000;
+                    else if (suffix === 'M') viewCount *= 1000000;
+                    else if (suffix === 'B') viewCount *= 1000000000;
 
                     if (viewCount < minViews) {
-                        video.remove();
+                        item.classList.add('unpopular-video-hidden');
                     }
                 }
+            }
+            return true;
+        }
+        return false;
+    };
+
+    const runCheck = () => {
+        const contentSelectors = [
+            'ytd-rich-item-renderer',
+            'ytd-video-renderer',
+            'ytd-compact-video-renderer',
+            'ytd-grid-video-renderer',
+            'ytd-item-section-renderer'
+        ];
+
+        const query = contentSelectors.map(selector => `${selector}:not(.views-processed)`).join(', ');
+        const newContent = document.querySelectorAll(query);
+
+        for (const item of newContent) {
+            const successfullyProcessed = processContent(item);
+            if (successfullyProcessed) {
+                item.classList.add('views-processed');
             }
         }
     };
 
-    const run = function() {
-        const videoRows = getVideoRows();
-        videoRows.forEach(processVideoRow);
-    };
+    const observer = new MutationObserver(runCheck);
 
-    setTimeout(run, 500);
-    setInterval(run, 500);
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
+    });
+
+    window.addEventListener('yt-navigate-finish', () => {
+        // wait a brief moment for the new content to settle in before running check
+        setTimeout(runCheck, 500);
+    });
+
+    // Initial run for the very first page load
+    setTimeout(runCheck, 1000);
 })();

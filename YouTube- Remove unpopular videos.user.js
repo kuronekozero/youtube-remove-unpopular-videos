@@ -15,7 +15,7 @@
 (function() {
     'use strict';
 
-    const minViews = 50000;
+    const minViews = 500;
 
     GM_addStyle(`
         .unpopular-video-hidden {
